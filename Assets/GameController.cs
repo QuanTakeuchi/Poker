@@ -22,12 +22,15 @@ public class GameController : MonoBehaviour
 {
 
     private GameObject []player1Cards;
+    private GameObject[] boardCards;
+
     private string[] cardList;
     private List<int> nextDealIndices;
     private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
     List<List<CardData>> playerCardsList;
-
+    List<CardData> boardCardData;
+    private Vector3 cardPos;
 
     void DealCards(int nPlayers)
     {
@@ -49,8 +52,7 @@ public class GameController : MonoBehaviour
         int randIndex;
 
         string cardName;
-        string suite;
-        int number;
+
         List<CardData> dealtCards = new List<CardData>();
 
         for (int c = 0; c < 2; c++)
@@ -65,34 +67,7 @@ public class GameController : MonoBehaviour
             GameObject.Instantiate(player1Cards[c], playerPos, transform.rotation);
             // Update CardData
 
-            if (cardName.Contains("clover"))
-            {
-                suite = "clover";
-            }
-            else if (cardName.Contains("diamond"))
-            {
-                suite = "diamond";
-            }
-            else if (cardName.Contains("heart"))
-            {
-                suite = "heart";
-            }
-            else if (cardName.Contains("spade"))
-            {
-                suite = "spade";
-            }
-            else
-            {
-                suite = null;
-                logger.Error("Prefab folder infected. Please remove extra files.");
-                throw new Exception("Runtime Error");
-            }
-            var intString = System.Text.RegularExpressions.Regex.Match(cardName, @"\d+").Value;
-            number = Int32.Parse(intString);
-
-            CardData cardData = new CardData(suite, number);
-
-            dealtCards.Add(cardData);
+            dealtCards.Add(getCardData(cardName));
 
             // Update playerPos
             playerPos.x += 0.7f;
@@ -110,45 +85,85 @@ public class GameController : MonoBehaviour
                 nextDealIndices.RemoveAt(randIndex);
                 cardName = cardList[randIndex];
                 
-                if (cardName.Contains("clover"))
-                {
-                    suite = "clover";
-                }
-                else if (cardName.Contains("diamond"))
-                {
-                    suite = "diamond";
-                }
-                else if (cardName.Contains("heart"))
-                {
-                    suite = "heart";
-                }
-                else if (cardName.Contains("spade"))
-                {
-                    suite = "spade";
-                }
-                else
-                {
-                    suite = null;
-                    logger.Error("Prefab folder infected. Please remove extra files.");
-                    throw new Exception("Runtime Error");
-                }
-                var intString = System.Text.RegularExpressions.Regex.Match(cardName, @"\d+").Value;
-                number = Int32.Parse(intString);
-
-                CardData cardData = new CardData(suite, number);
-                otherDealtCards.Add(cardData);
+                otherDealtCards.Add(getCardData(cardName));
             }
             playerCardsList.Add(otherDealtCards);
         }
         
     }
 
-    void DealFlop()
+    CardData getCardData(string cardName)
     {
+        string suite;
+        int number;
 
+        if (cardName.Contains("clover"))
+        {
+            suite = "clover";
+        }
+        else if (cardName.Contains("diamond"))
+        {
+            suite = "diamond";
+        }
+        else if (cardName.Contains("heart"))
+        {
+            suite = "heart";
+        }
+        else if (cardName.Contains("spade"))
+        {
+            suite = "spade";
+        }
+        else
+        {
+            suite = null;
+            logger.Error("Prefab folder infected. Please remove extra files.");
+            throw new Exception("Runtime Error");
+        }
+        var intString = System.Text.RegularExpressions.Regex.Match(cardName, @"\d+").Value;
+        number = Int32.Parse(intString);
+
+        return new CardData(suite, number);
     }
 
+    void DealFlop()
+    {
+        DealBoardCards(0, 3);
+    }
 
+    void DealTurn()
+    {
+        DealBoardCards(3, 4);
+    }
+
+    void DealRiver()
+    {
+        DealBoardCards(4, 5);
+    }
+    void DealBoardCards(int startIndex, int endIndex)
+    {
+        System.Random random = new System.Random();
+        int randIndex;
+
+        string cardName;
+
+        for (int c = startIndex; c < endIndex; c++)
+        {
+            randIndex = random.Next(0, nextDealIndices.Count);
+
+            // Card 1
+            cardName = Path.Combine("Prefabs", Path.GetFileNameWithoutExtension(cardList[randIndex]));
+            nextDealIndices.RemoveAt(randIndex);
+
+            boardCards[c] = Resources.Load(cardName) as GameObject;
+            GameObject.Instantiate(boardCards[c], cardPos, transform.rotation);
+            // Update CardData
+
+            boardCardData.Add(getCardData(cardName));
+
+            // Update playerPos
+            cardPos.x += 0.7f;
+        }
+    }
     private void Init()
     {
         try
@@ -160,7 +175,12 @@ public class GameController : MonoBehaviour
             {
                 nextDealIndices.Add(i);
             }
-            DealCards(1);
+
+            cardPos = new Vector3(-1.4f, 0.0f, 0.0f);
+            boardCards = new GameObject[5];
+            boardCardData = new List<CardData>();
+
+
         }
         catch (Exception ex)
         {
@@ -172,6 +192,10 @@ public class GameController : MonoBehaviour
     void Start()
     {
         Init();
+        DealCards(3);
+        DealFlop();
+        DealTurn();
+        DealRiver();
     }
 
     // Update is called once per frame

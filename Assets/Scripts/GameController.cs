@@ -3,7 +3,7 @@ using UnityEngine;
 using System.IO;
 using System.Linq;
 using System;
-
+using UnityEngine.UI;
 
 public class CardData
 {
@@ -20,6 +20,7 @@ public class CardData
 
 public class GameController : MonoBehaviour
 {
+    public Button checkButton;
 
     private GameObject []player1Cards;
     private GameObject[] boardCards;
@@ -28,10 +29,12 @@ public class GameController : MonoBehaviour
     private List<int> nextDealIndices;
     private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-    List<List<CardData>> playerCardsList;
-    List<CardData> boardCardData;
+    public List<List<CardData>> playerCardsList { get; set; }
+    public List<CardData> boardCardData { get; set; }
+
     private Vector3 cardPos;
 
+    private int gameState; // 0 - Preflop, 1 - Flop, 2 - Turn, 3 - River
     void DealCards(int nPlayers)
     {
         // Validate nPlayers
@@ -168,8 +171,14 @@ public class GameController : MonoBehaviour
     {
         try
         {
-            cardList = Directory.GetFiles("Assets/Resources/Prefabs").Where(name => !name.Contains(".meta")).ToArray();
+            cardList = Directory.GetFiles("Assets/Resources/Prefabs").Where(name => 
+                                                                            !name.Contains(".meta")).ToArray();
             nextDealIndices = new List<int>(52);
+            gameState = 0;
+
+            // Update button functions
+            checkButton.onClick.AddListener(checkButtonClick);
+
 
             for (int i=0; i<52; i++)
             {
@@ -188,14 +197,40 @@ public class GameController : MonoBehaviour
         }
     }
 
+    void checkButtonClick()
+    {
+        switch(gameState)
+        {
+            case 0:
+                DealFlop();
+                gameState++;
+                break;
+            case 1:
+                DealTurn();
+                gameState++;
+                break;
+            case 2:
+                DealRiver();
+                gameState++;
+                break;
+            case 3:
+                checkButton.interactable = false;
+                gameState++;
+                break;
+            default:
+
+                logger.Error("Incorrect GameState");
+                break;
+        }
+    }
     // Start is called before the first frame update
     void Start()
     {
         Init();
         DealCards(3);
-        DealFlop();
-        DealTurn();
-        DealRiver();
+        //DealFlop();
+        //DealTurn();
+        //DealRiver();
     }
 
     // Update is called once per frame

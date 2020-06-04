@@ -19,6 +19,9 @@ public class UpdateStats : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(textMesh.name == "HandDetails")
+        {
+
+        }
     }
 }

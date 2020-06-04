@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System;
 using UnityEngine.UI;
+using TMPro;
 
 public class CardData
 {
@@ -21,7 +22,7 @@ public class CardData
 public class GameController : MonoBehaviour
 {
     public Button checkButton;
-
+    public  TextMeshProUGUI textMesh;
     private GameObject []player1Cards;
     private GameObject[] boardCards;
 
@@ -63,7 +64,7 @@ public class GameController : MonoBehaviour
             randIndex = random.Next(0, nextDealIndices.Count);
 
             // Card 1
-            cardName = Path.Combine("Prefabs", Path.GetFileNameWithoutExtension(cardList[randIndex]));
+            cardName = Path.Combine("Prefabs", Path.GetFileNameWithoutExtension(cardList[nextDealIndices[randIndex]]));
             nextDealIndices.RemoveAt(randIndex);
 
             player1Cards[c] = Resources.Load(cardName) as GameObject;
@@ -86,7 +87,7 @@ public class GameController : MonoBehaviour
             {
                 randIndex = random.Next(0, nextDealIndices.Count);
                 nextDealIndices.RemoveAt(randIndex);
-                cardName = cardList[randIndex];
+                cardName = cardList[nextDealIndices[randIndex]];
                 
                 otherDealtCards.Add(getCardData(cardName));
             }
@@ -154,7 +155,7 @@ public class GameController : MonoBehaviour
             randIndex = random.Next(0, nextDealIndices.Count);
 
             // Card 1
-            cardName = Path.Combine("Prefabs", Path.GetFileNameWithoutExtension(cardList[randIndex]));
+            cardName = Path.Combine("Prefabs", Path.GetFileNameWithoutExtension(cardList[nextDealIndices[randIndex]]));
             nextDealIndices.RemoveAt(randIndex);
 
             boardCards[c] = Resources.Load(cardName) as GameObject;
@@ -199,7 +200,9 @@ public class GameController : MonoBehaviour
 
     void checkButtonClick()
     {
-        switch(gameState)
+        List<CardData> playerHand = new List<CardData>();
+  
+        switch (gameState)
         {
             case 0:
                 DealFlop();
@@ -222,6 +225,17 @@ public class GameController : MonoBehaviour
                 logger.Error("Incorrect GameState");
                 break;
         }
+        foreach (CardData c in playerCardsList[0])
+        {
+            playerHand.Add(c);
+        }
+        foreach (CardData c in boardCardData)
+        {
+            playerHand.Add(c);
+        }
+
+        PokerAI.HandStrength handStrength = PokerAI.BestHand(playerHand);
+        textMesh.text = PokerAI.HandTotext(handStrength);
     }
     // Start is called before the first frame update
     void Start()

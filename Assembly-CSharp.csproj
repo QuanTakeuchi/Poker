@@ -342,6 +342,9 @@
     <Reference Include="UnityEngine.XRModule">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.3.1f1/Editor/Data/Managed/UnityEngine/UnityEngine.XRModule.dll</HintPath>
     </Reference>
+    <Reference Include="Combinatorics">
+      <HintPath>C:/Users/rohit/Poker/Assets/Plugins/Combinatorics.dll</HintPath>
+    </Reference>
     <Reference Include="NLog">
       <HintPath>C:/Users/rohit/Poker/Assets/Plugins/NLog.dll</HintPath>
     </Reference>

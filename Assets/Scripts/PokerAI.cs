@@ -4,13 +4,17 @@ using UnityEngine;
 using Combinatorics.Collections;
 using System.Linq;
 using System;
+using TMPro;
 
 public class PokerAI : MonoBehaviour
 {
+    public GameObject gameController;
     public enum HandStrength  { ROYALFLUSH, STRAIGHTFLUSH, FOURKIND, FULLHOUSE, FLUSH, 
                                STRAIGHT, THREEKIND, TWOPAIR, PAIR, HIGH };
 
-    public List<HandStrength> PlayerHands { get; set; }
+
+
+    public static List<float> PlayerHandsProb { get; set; }
 
     public static HandStrength highestHand(List<HandStrength> handStrengths)
     {
@@ -157,5 +161,55 @@ public class PokerAI : MonoBehaviour
             else { return HandStrength.FULLHOUSE; }
         }
         return HandStrength.HIGH;
+    }
+
+    public void simulateCards(List<int> nextDealIndices, List<CardData> dealtCards, string []cardList)
+    {
+        GameController gC = gameController.GetComponent<GameController>();
+        try
+        {
+            int maxSimCount = 100;
+
+            System.Random random = new System.Random();
+            int randIndex;
+            string cardName;
+
+           
+
+            PlayerHandsProb = new List<float>() { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+            for (int sim = 0; sim < maxSimCount; sim++)
+            {
+                List<CardData> simDealtCards = new List<CardData>(dealtCards);
+                List<int> simDealIndices = new List<int>(nextDealIndices);
+                for (int i = 0; i < 7 - dealtCards.Count; i++)
+                {
+                    randIndex = random.Next(0, simDealIndices.Count);
+                    cardName = cardList[simDealIndices[randIndex]];
+                    simDealIndices.RemoveAt(randIndex);
+
+                    simDealtCards.Add(GameController.getCardData(cardName));
+                }
+                int bhIndex = (int)BestHand(simDealtCards);
+                PlayerHandsProb[bhIndex] += 1.0f / (float)maxSimCount;
+            }
+
+
+            gC.RFProb.text = PlayerHandsProb[0].ToString("0.00");
+            gC.SFProb.text = PlayerHandsProb[1].ToString("0.00");
+            gC.FKProb.text = PlayerHandsProb[2].ToString("0.00");
+            gC.FHProb.text = PlayerHandsProb[3].ToString("0.00");
+            gC.FProb.text = PlayerHandsProb[4].ToString("0.00");
+            gC.SProb.text = PlayerHandsProb[5].ToString("0.00");
+            gC.TKProb.text = PlayerHandsProb[6].ToString("0.00");
+            gC.TPProb.text = PlayerHandsProb[7].ToString("0.00");
+            gC.OPProb.text = PlayerHandsProb[8].ToString("0.00");
+            gC.HCProb.text = PlayerHandsProb[9].ToString("0.00");
+
+        }
+        catch(Exception ex)
+        {
+            GameController.logger.Error("Error at : " + ex.StackTrace);
+            throw new Exception("Runtime Error");
+        }
     }
 }

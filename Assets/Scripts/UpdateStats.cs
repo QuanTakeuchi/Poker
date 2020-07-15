@@ -13,15 +13,12 @@ public class UpdateStats : MonoBehaviour
     void Start()
     {
         textMesh = GetComponent<TextMeshProUGUI>();
-        textMesh.text = "Updated Statistics";
+        textMesh.text = "Statistics";
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(textMesh.name == "HandDetails")
-        {
-
-        }
+        
     }
 }

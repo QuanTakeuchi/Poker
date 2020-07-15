@@ -23,12 +23,26 @@ public class GameController : MonoBehaviour
 {
     public Button checkButton;
     public  TextMeshProUGUI textMesh;
+
+    // Lazy coding here
+    public TextMeshProUGUI RFProb;
+    public TextMeshProUGUI SFProb;
+    public TextMeshProUGUI FKProb;
+    public TextMeshProUGUI FHProb;
+    public TextMeshProUGUI FProb;
+    public TextMeshProUGUI SProb;
+    public TextMeshProUGUI TKProb;
+    public TextMeshProUGUI TPProb;
+    public TextMeshProUGUI OPProb;
+    public TextMeshProUGUI HCProb;
+
+    public GameObject pokerAI;
     private GameObject []player1Cards;
     private GameObject[] boardCards;
 
     private string[] cardList;
     private List<int> nextDealIndices;
-    private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+    public static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
     public List<List<CardData>> playerCardsList { get; set; }
     public List<CardData> boardCardData { get; set; }
@@ -96,7 +110,7 @@ public class GameController : MonoBehaviour
         
     }
 
-    CardData getCardData(string cardName)
+    public static CardData getCardData(string cardName)
     {
         string suite;
         int number;
@@ -201,7 +215,6 @@ public class GameController : MonoBehaviour
     void checkButtonClick()
     {
         List<CardData> playerHand = new List<CardData>();
-  
         switch (gameState)
         {
             case 0:
@@ -233,6 +246,9 @@ public class GameController : MonoBehaviour
         {
             playerHand.Add(c);
         }
+
+        PokerAI pokerAIScript = pokerAI.GetComponent<PokerAI>();
+        pokerAIScript.simulateCards(nextDealIndices, playerHand, cardList);
 
         PokerAI.HandStrength handStrength = PokerAI.BestHand(playerHand);
         textMesh.text = PokerAI.HandTotext(handStrength);
